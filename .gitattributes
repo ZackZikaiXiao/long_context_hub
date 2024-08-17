@@ -1,0 +1,5 @@
+# LongBench/pred_e/* filter=lfs diff=lfs merge=lfs -text
+LongBench/data filter=lfs diff=lfs merge=lfs -text
+Proof-pile/* filter=lfs diff=lfs merge=lfs -text
+# LongBench/pred/**/* filter=lfs diff=lfs merge=lfs -text
+benchmark/super_retrieval/kv-retrieval-3000_keys.jsonl filter=lfs diff=lfs merge=lfs -text
