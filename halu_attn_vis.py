@@ -17,14 +17,14 @@ generate_replace()
 
 from transformers import AutoConfig
 
-model_path = "/home/zikaixiao/zikaixiao/LongLoRA-main/models/llama-3-8B-1048k"  # 替换为你的Llama模型路径 MicroLlama  llama2-7B-4k  Llama-3-8B-Instruct-262k
+model_path = "/home/zikaixiao/zikaixiao/LongLoRA-main/models/llama-3-8B-262k"  # 替换为你的Llama模型路径 MicroLlama  llama2-7B-4k  Llama-3-8B-Instruct-262k
 base_path = "/home/zikaixiao/zikaixiao/LongLoRA-main/benchmark/super_retrieval"
 input_len = "8k"
 # datasets_name = ["kv_retrieval", "math_calc", "variable_tracking"]
 # datasets_name = ["math_calc", "variable_tracking"]
-datasets_name = ["variable_tracking"]
+# datasets_name = ["variable_tracking"]
 # datasets_name = ["math_calc"]
-# datasets_name = ["kv_retrieval"]
+datasets_name = ["kv_retrieval"]
 TRUNCATE_LEN = 262 * 1024
 enable_MsPoE = False
 

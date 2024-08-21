@@ -425,24 +425,41 @@ class LlamaFlashAttention2(LlamaAttention):
 
         cos, sin = self.rotary_emb(value_states, position_ids)
         if update_past_key_values:
+            
+            # 方案一
             # 指定要修改的范围
+            # start_idx = 0
+            # end_idx = int(self.head_dim / 2)
+            # noise_std = 0.03  # 高斯噪声的标准差
+            # noise_cos = torch.randn(bsz, q_len, end_idx - start_idx, device=cos.device) * noise_std
+            # noise_sin = torch.randn(bsz, q_len, end_idx - start_idx, device=sin.device) * noise_std
+            # cos[:, :, start_idx:end_idx].add_(noise_cos)
+            # sin[:, :, start_idx:end_idx].add_(noise_sin)
+            
+            # 方案二
+            import numpy as np
+            # 假设 self.head_dim 已经定义
             start_idx = 0
-            end_idx = int(self.head_dim / 2)
-            # start_idx = int(self.head_dim / 2)
-            # end_idx = self.head_dim
-            # 修改方式
-            modify_mode = "gaussian_noise"  # "gaussian_noise" 或 "constant_value"
-            constant_value = 0  # 当 modify_mode 为 "constant_value" 时，使用的常数值
-            noise_std = 0.03  # 高斯噪声的标准差
-            # 按指定方式修改张量
-            if modify_mode == "gaussian_noise":
-                noise_cos = torch.randn(bsz, q_len, end_idx - start_idx, device=cos.device) * noise_std
-                noise_sin = torch.randn(bsz, q_len, end_idx - start_idx, device=sin.device) * noise_std
-                cos[:, :, start_idx:end_idx].add_(noise_cos)
-                sin[:, :, start_idx:end_idx].add_(noise_sin)
-            elif modify_mode == "constant_value":
-                cos[:, :, start_idx:end_idx].fill_(constant_value)
-                sin[:, :, start_idx:end_idx].fill_(constant_value)
+            end_idx = int(self.head_dim * 1 / 2)
+
+            # 生成一个指数衰减的噪声标准差数组
+            idx_range = np.arange(end_idx - start_idx)
+            max_std = 0.08
+            min_std = 0.001
+            # 使用np.power来生成长尾分布, 你可以调整指数以改变衰减率
+            noise_stds = min_std + (max_std - min_std) * np.power(0.1, idx_range / (end_idx - start_idx))
+
+            # 将其转换为torch tensor并扩展到batch size和query length
+            noise_stds = torch.tensor(noise_stds, device=cos.device).unsqueeze(0).unsqueeze(0)
+
+            # 生成噪声
+            noise_cos = torch.randn(bsz, q_len, end_idx - start_idx, device=cos.device) * noise_stds
+            noise_sin = torch.randn(bsz, q_len, end_idx - start_idx, device=sin.device) * noise_stds
+
+            # 按照计算的噪声添加到对应位置
+            cos[:, :, start_idx:end_idx].add_(noise_cos)
+            sin[:, :, start_idx:end_idx].add_(noise_sin)
+     
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
 
         if past_key_value is not None:

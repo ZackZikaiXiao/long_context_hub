@@ -71,3 +71,6 @@ next_token_logits_k_300.pt
 
 /benchmark/RULER/llama-3-8B-262k
 /benchmark/RULER/llama-3-8B-262k-official
+motivation/data
+motivation/data_32k
+benchmark/RULER/llama-3-8B-262k-方案一
